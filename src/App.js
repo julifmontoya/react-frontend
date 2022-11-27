@@ -1,9 +1,8 @@
 import logo from './logo.svg';
 import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import HotelListing from './HotelListing';
-import HotelCreate from './HotelCreate';
-import HotelEdit from './HotelEdit';
+import HotelList from './Pages/HotelList';
+import Hotel from './Pages/Hotel';
 
 function App() {
   return (
@@ -11,9 +10,9 @@ function App() {
       <h1></h1>
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<HotelListing />}></Route>
-          <Route path='/hotel/create' element={<HotelCreate />}></Route>
-          <Route path='/hotel/edit/:hotelId' element={<HotelEdit />}></Route>
+          <Route path='/' element={<HotelList />}></Route>
+          <Route path='/hotel/' element={<Hotel />}></Route>
+          <Route path='/hotel/:hotelId' element={<Hotel />}></Route>
         </Routes>
       </BrowserRouter>
     </div>

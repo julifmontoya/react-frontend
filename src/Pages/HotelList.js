@@ -1,34 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios';
 
-const HotelListing = () => {
-    const [hoteldata, hoteldatachange] = useState(null);
+const HotelList = () => {
+    const [hotelData, setAPIData] = useState(null);
     const navigate = useNavigate();
 
-    const LoadEdit = (id) => {
-        navigate("/hotel/edit/" + id);
-    }
-    const Removefunction = (id) => {
-        if (window.confirm('Deseas Eliminar?')) {
-            fetch("http://localhost:5000/v1/hotels/" + id, {
-                method: "DELETE"
-            }).then((res) => {
-                window.location.reload();
-            }).catch((err) => {
-                console.log(err.message)
+    useEffect(() => {
+        axios.get(`http://localhost:5000/v1/hotels`)
+            .then((response) => {
+                setAPIData(response.data);
             })
+    }, [])
+
+    const sendId = (id) => {
+        navigate("/hotel/" + id);
+    }
+
+    const onDelete = (id) => {
+        if (window.confirm('Deseas Eliminar?')) {
+            axios.delete(`http://localhost:5000/v1/hotels/${id}`)
+                .then(() => {
+                    getData();
+                })
         }
     }
 
-    useEffect(() => {
-        fetch("http://localhost:5000/v1/hotels/").then((res) => {
-            return res.json();
-        }).then((resp) => {
-            hoteldatachange(resp);
-        }).catch((err) => {
-            console.log(err.message);
-        })
-    }, [])
+    const getData = () => {
+        axios.get(`http://localhost:5000/v1/hotels`)
+            .then((getData) => {
+                setAPIData(getData.data);
+            })
+    }
+
     return (
         <div className="container">
             <div className="card">
@@ -37,7 +41,7 @@ const HotelListing = () => {
                 </div>
                 <div className="card-body">
                     <div className="divbtn">
-                        <Link to="hotel/create" className="btn btn-success">Crear (+)</Link>
+                        <Link to="hotel/" className="btn btn-success">Crear (+)</Link>
                     </div>
                     <table className="table table-bordered">
                         <thead className="bg-dark text-white">
@@ -48,18 +52,17 @@ const HotelListing = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {hoteldata &&
-                                hoteldata.map(item => (
+                            {hotelData &&
+                                hotelData.map(item => (
                                     <tr key={item._id}>
                                         <td>{item._id}</td>
                                         <td>{item.name}</td>
-                                        <td><a onClick={() => { LoadEdit(item._id) }} className="btn btn-success">Editar</a>
-                                            <a onClick={() => { Removefunction(item._id) }} className="btn btn-danger">Eliminar</a>
+                                        <td><a onClick={() => { sendId(item._id) }} className="btn btn-success">Editar</a>
+                                            <a onClick={() => { onDelete(item._id) }} className="btn btn-danger">Eliminar</a>
                                         </td>
                                     </tr>
                                 ))
                             }
-
                         </tbody>
                     </table>
                 </div>
@@ -68,4 +71,4 @@ const HotelListing = () => {
     );
 }
 
-export default HotelListing;
+export default HotelList;

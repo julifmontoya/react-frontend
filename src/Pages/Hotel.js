@@ -1,46 +1,63 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import axios from 'axios';
 
 const HotelEdit = () => {
     const { hotelId } = useParams();
+    const navigate = useNavigate();
+
+    const [name, nameSet] = useState("");
+    const [description, descriptionSet] = useState("");
+    const [checkIn, checkInSet] = useState("");
+    const [checkOut, checkOutSet] = useState("");
+    const [stars, starsSet] = useState("");
+    const [numRooms, numRoomsSet] = useState("");
+    const [address, addressSet] = useState("");
+    const [latitude, latitudeSet] = useState("");
+    const [longitude, longitudeSet] = useState("");
 
     useEffect(() => {
-        fetch("http://localhost:5000/v1/hotels/" + hotelId).then((res) => {
-            return res.json();
-        }).then((resp) => {
-            idchange(resp._id);
-            namechange(resp.name);
-            descriptionchange(resp.description);
-            checkInchange(resp.check_in);
-            checkOutchange(resp.check_out);
-            numRoomschange(resp.num_rooms);
-            starschange(resp.stars);
-            addresschange(resp.address);
-            latitudechange(resp.latitude);
-            longitudechange(resp.longitude);
+        if (hotelId) {
+            axios.get(`http://localhost:5000/v1/hotels/${hotelId}`)
+                .then((response) => {
+                    nameSet(response.data.name);
+                    descriptionSet(response.data.description);
+                    checkInSet(response.data.check_in);
+                    checkOutSet(response.data.check_out);
+                    numRoomsSet(response.data.num_rooms);
+                    starsSet(response.data.stars);
+                    addressSet(response.data.address);
+                    latitudeSet(response.data.latitude);
+                    longitudeSet(response.data.longitude);
+                })
+        }
+    }, [])
 
-        }).catch((err) => {
-            console.log(err.message);
-        })
-    }, []);
+/*     useEffect(() => {
+        if (hotelId) {
+            fetch("http://localhost:5000/v1/hotels/" + hotelId).then((res) => {
+                return res.json();
+            }).then((resp) => {
+                idSet(resp._id);
+                nameSet(resp.name);
+                descriptionSet(resp.description);
+                checkInSet(resp.check_in);
+                checkOutSet(resp.check_out);
+                numRoomsSet(resp.num_rooms);
+                starsSet(resp.stars);
+                addressSet(resp.address);
+                latitudeSet(resp.latitude);
+                longitudeSet(resp.longitude);
 
-    const [id, idchange] = useState("");
-    const [name, namechange] = useState("");
-    const [description, descriptionchange] = useState("");
-    const [checkIn, checkInchange] = useState("");
-    const [checkOut, checkOutchange] = useState("");
-    const [stars, starschange] = useState("");
-    const [numRooms, numRoomschange] = useState("");
-    const [address, addresschange] = useState("");
-    const [latitude, latitudechange] = useState("");
-    const [longitude, longitudechange] = useState("");
-    const [validation, valchange] = useState(false);
-
-    const navigate = useNavigate();
+            }).catch((err) => {
+                console.log(err.message);
+            })
+        }
+    }, []); */
 
     const handlesubmit = (e) => {
         e.preventDefault();
-        const hoteldata = {
+        const body = {
             "name": name,
             "description": description,
             "check_in": checkIn,
@@ -52,18 +69,47 @@ const HotelEdit = () => {
             "longitude": longitude
         };
 
-
-        fetch("http://localhost:5000/v1/hotels/" + hotelId, {
-            method: "PUT",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(hoteldata)
-        }).then((res) => {
+        if (!hotelId) {
+            createData(body);
             navigate('/');
-        }).catch((err) => {
-            console.log(err.message)
-        })
+        } else {
+            updateData(body);
+            navigate('/');
+        }
 
+        async function createData(body) {
+            axios.post(`http://localhost:5000/v1/hotels/`, body)
+        }
+
+        async function updateData(body) {
+            await axios.put(`http://localhost:5000/v1/hotels/${hotelId}`, body)
+        }
+
+        /*      function createData(body) {
+                    fetch("http://localhost:5000/v1/hotels/", {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify(body)
+                    }).then((res) => {
+                        navigate('/');
+                    }).catch((err) => {
+                        console.log(err.message)
+                    })
+                }
+        
+                function updateData(body) {
+                    fetch("http://localhost:5000/v1/hotels/" + hotelId, {
+                        method: "PUT",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify(body)
+                    }).then((res) => {
+                        navigate('/');
+                    }).catch((err) => {
+                        console.log(err.message)
+                    })
+                } */
     }
+
     return (
         <div>
 
@@ -72,29 +118,20 @@ const HotelEdit = () => {
                     <form className="container" onSubmit={handlesubmit}>
                         <div className="card" style={{ "textAlign": "left" }}>
                             <div className="card-title">
-                                <h2>Editar Hotel</h2>
+                                <h2>Detalles del Hotel</h2>
                             </div>
                             <div className="card-body">
                                 <div className="row">
-                                    <div className="col-lg-12">
-                                        <div className="form-group">
-                                            <label>ID</label>
-                                            <input
-                                                value={id}
-                                                disabled="disabled"
-                                                className="form-control">
-                                            </input>
-                                        </div>
-                                    </div>
 
                                     <div className="col-lg-12">
                                         <div className="form-group">
                                             <label>Name</label>
-                                            <input required value={name}
-                                                onMouseDown={e => valchange(true)}
-                                                onChange={e => namechange(e.target.value)}
+                                            <input
+                                                required
+                                                value={name}
+                                                onChange={e => nameSet(e.target.value)}
                                                 className="form-control"></input>
-                                            {name.length == 0 && validation && <span className="text-danger">Enter the name</span>}
+
                                         </div>
                                     </div>
 
@@ -102,7 +139,7 @@ const HotelEdit = () => {
                                         <div className="form-group">
                                             <label>description</label>
                                             <input value={description}
-                                                onChange={e => descriptionchange(e.target.value)}
+                                                onChange={e => descriptionSet(e.target.value)}
                                                 className="form-control"></input>
                                         </div>
                                     </div>
@@ -111,7 +148,7 @@ const HotelEdit = () => {
                                         <div className="form-group">
                                             <label>checkIn</label>
                                             <input value={checkIn}
-                                                onChange={e => checkInchange(e.target.value)}
+                                                onChange={e => checkInSet(e.target.value)}
                                                 className="form-control"
                                                 type="time"></input>
                                         </div>
@@ -121,7 +158,7 @@ const HotelEdit = () => {
                                         <div className="form-group">
                                             <label>checkOut</label>
                                             <input value={checkOut}
-                                                onChange={e => checkOutchange(e.target.value)}
+                                                onChange={e => checkOutSet(e.target.value)}
                                                 className="form-control"
                                                 type="time"></input>
                                         </div>
@@ -131,7 +168,7 @@ const HotelEdit = () => {
                                         <div className="form-group">
                                             <label>stars</label>
                                             <input value={stars}
-                                                onChange={e => starschange(e.target.value)}
+                                                onChange={e => starsSet(e.target.value)}
                                                 className="form-control"
                                                 type="number"></input>
                                         </div>
@@ -141,7 +178,7 @@ const HotelEdit = () => {
                                         <div className="form-group">
                                             <label>numRooms</label>
                                             <input value={numRooms}
-                                                onChange={e => numRoomschange(e.target.value)}
+                                                onChange={e => numRoomsSet(e.target.value)}
                                                 className="form-control"
                                                 type="number"></input>
                                         </div>
@@ -151,7 +188,7 @@ const HotelEdit = () => {
                                         <div className="form-group">
                                             <label>address</label>
                                             <input value={address}
-                                                onChange={e => addresschange(e.target.value)}
+                                                onChange={e => addressSet(e.target.value)}
                                                 className="form-control"
                                                 type="text"></input>
                                         </div>
@@ -161,7 +198,7 @@ const HotelEdit = () => {
                                         <div className="form-group">
                                             <label>latitude</label>
                                             <input value={latitude}
-                                                onChange={e => latitudechange(e.target.value)}
+                                                onChange={e => latitudeSet(e.target.value)}
                                                 className="form-control"></input>
                                         </div>
                                     </div>
@@ -170,7 +207,7 @@ const HotelEdit = () => {
                                         <div className="form-group">
                                             <label>longitude</label>
                                             <input value={longitude}
-                                                onChange={e => longitudechange(e.target.value)}
+                                                onChange={e => longitudeSet(e.target.value)}
                                                 className="form-control"></input>
                                         </div>
                                     </div>
